@@ -1,0 +1,62 @@
+@startuml
+
+|Locataire|
+start
+
+:Authentification;
+:Saisir identifiants;
+if (Identifiants valides ?) then (oui)
+  :Accès au système;
+else (non)
+  stop
+endif
+
+|Locataire|
+:Consulter annonces disponibles;
+:Sélectionner appartement et dates;
+:Envoyer demande de réservation;
+
+|Systeme|
+:Enregistrer réservation (statut "En attente");
+:Notifier administrateur;
+:Notifier agent immobilier;
+
+|AgentImmobilier|
+:Organiser visites et suivi des dossiers;
+
+|Administrateur|
+:Valider réservation?;
+if (Validation ok ?) then (oui)
+  :Mettre à jour statut réservation "Confirmée";
+  :Notifier propriétaire;
+  :Notifier agent immobilier;
+else (non)
+  :Notifier locataire de refus;
+  stop
+endif
+
+|Locataire|
+:Effectuer paiement;
+
+|Systeme|
+:Enregistrer paiement;
+:Notifier administrateur du paiement;
+:Notifier service comptable;
+
+|ServiceComptable|
+:Enregistrer transaction comptable;
+:Gérer quittances et déclarations fiscales;
+
+|Administrateur|
+:Attribuer tâche post-séjour au prestataire;
+
+|Prestataire|
+:Recevoir notification tâche;
+:Confirmer réception tâche;
+
+|Syndic|
+:Gérer parties communes, charges et travaux;
+:Mettre à jour état travaux;
+
+stop
+@enduml

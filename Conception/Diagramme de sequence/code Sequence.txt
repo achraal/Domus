@@ -1,0 +1,74 @@
+
+@startuml
+actor Locataire
+actor Proprietaire
+actor Administrateur
+actor Prestataire
+actor AgentImmobilier as "Agent Immobilier"
+actor Syndic
+actor ServiceComptable as "Service Comptable"
+
+participant InterfaceWeb as "Interface Utilisateur"
+participant AuthService as "Service Authentification"
+participant AppartementsService as "Service Appartements"
+participant ReservationService as "Service Réservations"
+participant PaiementService as "Service Paiements"
+participant NotificationService as "Service Notifications"
+participant TacheService as "Service Tâches"
+participant ComptabiliteService as "Service Comptabilité"
+participant SyndicService as "Service Syndic"
+participant BaseDonnees as "Base de Données"
+
+== Authentification ==
+Locataire -> InterfaceWeb : Se connecter
+Proprietaire -> InterfaceWeb : Se connecter
+Administrateur -> InterfaceWeb : Se connecter
+Prestataire -> InterfaceWeb : Se connecter
+AgentImmobilier -> InterfaceWeb : Se connecter
+Syndic -> InterfaceWeb : Se connecter
+ServiceComptable -> InterfaceWeb : Se connecter
+
+InterfaceWeb -> AuthService : Vérifier identifiants
+AuthService -> BaseDonnees : Récupérer utilisateur
+BaseDonnees --> AuthService : Utilisateur valide
+AuthService --> InterfaceWeb : Authentification réussie
+
+== Réservation ==
+Locataire -> InterfaceWeb : Demande réservation
+InterfaceWeb -> ReservationService : Créer réservation
+ReservationService -> BaseDonnees : Enregistrer réservation (statut "En attente")
+BaseDonnees --> ReservationService : Confirmation
+
+== Paiement ==
+Locataire -> InterfaceWeb : Effectuer paiement
+InterfaceWeb -> PaiementService : Traiter paiement
+PaiementService -> BaseDonnees : Enregistrer paiement (statut)
+BaseDonnees --> PaiementService : Confirmation
+PaiementService --> InterfaceWeb : Paiement réussi
+
+PaiementService -> ComptabiliteService : Enregistrer transaction
+ComptabiliteService -> BaseDonnees : Mettre à jour comptabilité
+BaseDonnees --> ComptabiliteService : Confirmation
+
+== Validation par Administrateur ==
+ReservationService -> Administrateur : Notification réservation à valider
+Administrateur -> ReservationService : Valider réservation
+ReservationService -> BaseDonnees : Mettre à jour statut réservation ("Confirmée")
+BaseDonnees --> ReservationService : Confirmation
+
+== Notification au Propriétaire et Agent Immobilier ==
+ReservationService -> NotificationService : Envoyer notification au propriétaire
+NotificationService -> Proprietaire : Notification réservation confirmée
+NotificationService -> AgentImmobilier : Notification réservation confirmée
+
+== Gestion syndic ==
+Syndic -> SyndicService : Gérer parties communes et travaux
+SyndicService -> BaseDonnees : Mettre à jour état travaux
+BaseDonnees --> SyndicService : Confirmation
+
+== Attribution tâche au Prestataire ==
+Administrateur -> TacheService : Créer tâche maintenance post-séjour
+TacheService -> Prestataire : Notification nouvelle tâche
+Prestataire -> TacheService : Confirmer réception tâche
+
+@enduml

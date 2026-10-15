@@ -1,0 +1,27 @@
+@startuml
+[*] --> NonRéservé : Appartement disponible
+
+NonRéservé --> EnAttente : Demande de réservation reçue
+EnAttente --> Annulée : Annulation par locataire ou refus administrateur
+EnAttente --> Confirmée : Validation par administrateur et agent immobilier
+
+Confirmée --> Payée : Paiement effectué avec succès
+Confirmée --> Annulée : Annulation avant paiement
+
+Payée --> Occupée : Début de la période de location (date début)
+Occupée --> Terminée : Fin de la période de location (date fin)
+
+Terminée --> EnMaintenance : Signalement travaux / intervention syndic ou prestataire
+Terminée --> NonRéservé : Appartement libéré (sans travaux)
+Terminée --> [*] : Fin du cycle (ex. appartement définitivement retiré)
+
+EnMaintenance --> NonRéservé : Appartement libéré après travaux
+
+Annulée --> NonRéservé : Libération de l’appartement
+Annulée --> [*] : Fin du processus après annulation
+
+' États annexes liés aux acteurs comptables
+Payée --> Comptabilisé : Paiement enregistré par service comptable
+Comptabilisé --> Occupée : Transition normale vers occupation
+
+@enduml

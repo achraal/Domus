@@ -1,0 +1,130 @@
+
+	•	Gestion des annonces d'appartements (description, photos, caractéristiques, prix, localisation)
+	•	Gestion des réservations et disponibilités des logements
+	•	Gestion des utilisateurs : locataires, propriétaires, administrateurs
+	•	Gestion des paiements et facturations
+	•	Suivi des états des appartements (libre, occupé, en maintenance)
+	•	Automatisation de la tarification selon les saisons, promotions, etc.
+	•	Communication entre locataires et propriétaires
+	•	Attribution de tâches aux prestataires (nettoyage, maintenance)
+	•	Rapports et statistiques pour les gestionnaires
+
+
+Tables principales
+	•	Annonces
+	•	id_annonce (INT, PRIMARY KEY)
+	•	id_propriétaire (INT, FOREIGN KEY vers Utilisateurs)
+	•	titre (VARCHAR)
+	•	description (TEXT)
+	•	adresse (VARCHAR)
+	•	ville (VARCHAR)
+	•	code_postal (VARCHAR)
+	•	nombre_de_chambres (INT)
+	•	superficie (DECIMAL)
+	•	prix_par_nuit (DECIMAL)
+	•	photos (TEXT) - Chemin vers les fichiers images, séparés par des virgules par exemple
+	•	caractéristiques (TEXT) - Commodités, équipements, etc.
+	•	Réservations
+	•	id_réservation (INT, PRIMARY KEY)
+	•	id_annonce (INT, FOREIGN KEY vers Annonces)
+	•	id_locataire (INT, FOREIGN KEY vers Utilisateurs)
+	•	date_début (DATE)
+	•	date_fin (DATE)
+	•	nombre_de_personnes (INT)
+	•	prix_total (DECIMAL)
+	•	statut (VARCHAR) - Ex: "En attente", "Confirmée", "Annulée"
+	•	Paiements
+	•	id_paiement (INT, PRIMARY KEY)
+	•	id_réservation (INT, FOREIGN KEY vers Réservations)
+	•	date_paiement (DATETIME)
+	•	montant (DECIMAL)
+	•	méthode_paiement (VARCHAR)
+	•	statut (VARCHAR) - Ex: "Réussi", "Échoué", "Remboursé"
+	•	Utilisateurs
+	•	id_utilisateur (INT, PRIMARY KEY)
+	•	type_utilisateur (VARCHAR) - Ex: "Locataire", "Propriétaire", "Administrateur"
+	•	nom (VARCHAR)
+	•	prénom (VARCHAR)
+	•	email (VARCHAR, UNIQUE)
+	•	mot_de_passe (VARCHAR)
+	•	téléphone (VARCHAR)
+	•	adresse (VARCHAR)
+Tables supplémentaires pour les fonctionnalités spécifiques
+	•	ÉtatsAppartements
+	•	id_état (INT, PRIMARY KEY)
+	•	id_annonce (INT, FOREIGN KEY vers Annonces)
+	•	date_état (DATE)
+	•	état (VARCHAR) - "Libre", "Occupé", "En maintenance"
+	•	commentaire (TEXT)
+	•	TarificationSaisonnière
+	•	id_tarification (INT, PRIMARY KEY)
+	•	id_annonce (INT, FOREIGN KEY vers Annonces)
+	•	saison (VARCHAR) - "Été", "Hiver", "Automne", "Printemps"
+	•	date_début (DATE)
+	•	date_fin (DATE)
+	•	prix_par_nuit (DECIMAL)
+	•	promotion (DECIMAL) - Pourcentage de réduction
+	•	Messages
+	•	id_message (INT, PRIMARY KEY)
+	•	id_expéditeur (INT, FOREIGN KEY vers Utilisateurs)
+	•	id_destinataire (INT, FOREIGN KEY vers Utilisateurs)
+	•	date_message (DATETIME)
+	•	contenu (TEXT)
+	•	TâchesPrestataires
+	•	id_tâche (INT, PRIMARY KEY)
+	•	id_annonce (INT, FOREIGN KEY vers Annonces)
+	•	id_prestataire (INT, FOREIGN KEY vers Utilisateurs) - Type utilisateur = "Prestataire"
+	•	description (TEXT)
+	•	date_planifiée (DATE)
+	•	date_exécution (DATE)
+	•	statut (VARCHAR) - "Planifiée", "En cours", "Terminée"
+	•	Rapports
+	•	id_rapport (INT, PRIMARY KEY)
+	•	type_rapport (VARCHAR) - "Revenus", "Réservations", "Disponibilités"
+	•	date_génération (DATETIME)
+	•	période (VARCHAR) - "Mensuel", "Trimestriel", "Annuel"
+	•	contenu (TEXT) - Données du rapport au format JSON ou CSV par exemple
+	•	AgentsImmobiliers
+	•	id_agent (INT, PRIMARY KEY)
+	•	id_utilisateur (INT, FOREIGN KEY vers Utilisateurs)
+	•	agence (VARCHAR)
+	•	téléphone_agence (VARCHAR)
+Visites
+	•	id_visite (INT, PRIMARY KEY)
+	•	id_annonce (INT, FOREIGN KEY vers Annonces)
+	•	id_agent (INT, FOREIGN KEY vers AgentsImmobiliers)
+	•	date_visite (DATETIME)
+	•	statut (VARCHAR) - Ex: "Planifiée", "Réalisée", "Annulée"
+Syndics
+	•	id_syndic (INT, PRIMARY KEY)
+	•	id_utilisateur (INT, FOREIGN KEY vers Utilisateurs)
+	•	immeuble (VARCHAR)
+	•	contact (VARCHAR)
+TravauxSyndic
+	•	id_travail (INT, PRIMARY KEY)
+	•	id_syndic (INT, FOREIGN KEY vers Syndics)
+	•	id_annonce (INT, FOREIGN KEY vers Annonces)
+	•	description (TEXT)
+	•	date_debut (DATE)
+	•	date_fin (DATE)
+	•	statut (VARCHAR) - Ex: "Planifié", "En cours", "Terminé"
+ServicesComptables
+	•	id_service (INT, PRIMARY KEY)
+	•	id_utilisateur (INT, FOREIGN KEY vers Utilisateurs)
+	•	nom_service (VARCHAR)
+	•	contact (VARCHAR)
+Quittances
+	•	id_quittance (INT, PRIMARY KEY)
+	•	id_paiement (INT, FOREIGN KEY vers Paiements)
+	•	date_emission (DATE)
+	•	montant (DECIMAL)
+	•	statut (VARCHAR) - Ex: "Envoyée", "Payée", "Annulée"
+	•	
+
+Les acteurs principaux d’un système de gestion locative d’appartements sont généralement les suivants :
+	•	Propriétaires / Bailleurs : Ils mettent leurs biens en location, gèrent les contrats de bail, suivent les paiements des loyers et les éventuels incidents liés aux logements.
+	•	Locataires : Ils recherchent des appartements, soumettent des candidatures, signent les contrats de location, paient les loyers et peuvent signaler des problèmes ou incidents.
+	•	Gestionnaires / Administrateurs : Ils supervisent la gestion globale, valident les dossiers des locataires, gèrent les paiements, les contrats, les incidents et assurent la communication entre propriétaires et locataires.
+	•	Agents immobiliers / Mandataires : Ils peuvent intervenir pour la mise en location, la visite des biens, la négociation des contrats et le suivi des dossiers.
+	•	Syndics de copropriété (si applicable) : Ils gèrent les parties communes, les charges et les travaux dans les immeubles en copropriété.
+	•	Services comptables / financiers : Pour la gestion des paiements, quittances, déclarations fiscales et comptabilité liée aux biens loués.

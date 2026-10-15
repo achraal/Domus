@@ -1,0 +1,142 @@
+
+@startuml
+' Orientation horizontale
+left to right direction
+skinparam classAttributeIconSize 0
+
+' Classe Utilisateur avec héritage par type
+class Utilisateur {
+  +id_utilisateur : int
+  +type_utilisateur : String
+  +nom : String
+  +prenom : String
+  +email : String
+  +mot_de_passe : String
+  +telephone : String
+  +adresse : String
+}
+
+class Proprietaire {
+}
+
+class Locataire {
+}
+
+class Administrateur {
+}
+
+class Prestataire {
+}
+
+class AgentImmobilier {
+}
+
+class Syndic {
+}
+
+class ServiceComptable {
+}
+
+Utilisateur <|-- Proprietaire
+Utilisateur <|-- Locataire
+Utilisateur <|-- Administrateur
+Utilisateur <|-- Prestataire
+Utilisateur <|-- AgentImmobilier
+Utilisateur <|-- Syndic
+Utilisateur <|-- ServiceComptable
+
+' Classe Annonce
+class Annonce {
+  +id_annonce : int
+  +titre : String
+  +description : String
+  +adresse : String
+  +ville : String
+  +code_postal : String
+  +nombre_de_chambres : int
+  +superficie : decimal
+  +prix_par_nuit : decimal
+  +photos : String
+  +caracteristiques : String
+}
+
+' Classe Reservation
+class Reservation {
+  +id_reservation : int
+  +date_debut : Date
+  +date_fin : Date
+  +nombre_de_personnes : int
+  +prix_total : decimal
+  +statut : String
+}
+
+' Classe Paiement
+class Paiement {
+  +id_paiement : int
+  +date_paiement : DateTime
+  +montant : decimal
+  +methode_paiement : String
+  +statut : String
+}
+
+' Classe EtatAppartement
+class EtatAppartement {
+  +id_etat : int
+  +date_etat : Date
+  +etat : String
+  +commentaire : String
+}
+
+' Classe TarificationSaisonniere
+class TarificationSaisonniere {
+  +id_tarification : int
+  +saison : String
+  +date_debut : Date
+  +date_fin : Date
+  +prix_par_nuit : decimal
+  +promotion : decimal
+}
+
+' Classe Message
+class Message {
+  +id_message : int
+  +date_message : DateTime
+  +contenu : String
+}
+
+' Classe TachePrestataire
+class TachePrestataire {
+  +id_tache : int
+  +description : String
+  +date_planifiee : Date
+  +date_execution : Date
+  +statut : String
+}
+
+' Classe Rapport
+class Rapport {
+  +id_rapport : int
+  +type_rapport : String
+  +date_generation : DateTime
+  +periode : String
+  +contenu : String
+}
+
+' Associations
+Proprietaire "1" -- "0..*" Annonce : possede >
+Annonce "1" -- "0..*" Reservation : concerne >
+Locataire "1" -- "0..*" Reservation : effectue >
+Reservation "1" -- "0..1" Paiement : regle >
+Annonce "1" -- "0..*" EtatAppartement : suivi >
+Annonce "1" -- "0..*" TarificationSaisonniere : applique >
+Message "1" -- "1" Utilisateur : expediteur >
+Message "1" -- "1" Utilisateur : destinataire >
+Annonce "1" -- "0..*" TachePrestataire : concerne >
+Prestataire "1" -- "0..*" TachePrestataire : realise >
+
+' Associations spécifiques aux nouveaux acteurs
+AgentImmobilier "1" -- "0..*" Annonce : gere >
+Syndic "1" -- "0..*" Annonce : gere_parties_communes >
+ServiceComptable "1" -- "0..*" Paiement : gere >
+
+@enduml

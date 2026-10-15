@@ -1,0 +1,62 @@
+@startuml
+left to right direction
+skinparam packageStyle rectangle
+
+actor Proprietaire
+actor Locataire
+actor Administrateur
+actor Prestataire
+actor AgentImmobilier as "Agent Immobilier / Mandataire"
+actor Syndic as "Syndic de copropriété"
+actor ServiceComptable as "Service comptable / financier"
+
+rectangle "Système de gestion locative" {
+
+  Proprietaire -- (S'authentifier)
+  Locataire -- (S'authentifier)
+  Administrateur -- (S'authentifier)
+  Prestataire -- (S'authentifier)
+  AgentImmobilier -- (S'authentifier)
+  Syndic -- (S'authentifier)
+  ServiceComptable -- (S'authentifier)
+
+  Proprietaire -- (Gestion des annonces d'appartements)
+  Administrateur -- (Gestion des annonces d'appartements)
+
+  Locataire -- (Gestion des réservations et disponibilités)
+  Administrateur -- (Gestion des réservations et disponibilités)
+
+  Administrateur -- (Gestion des utilisateurs)
+
+  Locataire -- (Consulter ses paiements)
+  Administrateur -- (Gestion des paiements et facturations)
+
+  Proprietaire -- (Consulter l'état de son appartement)
+  Prestataire -- (Consulter l'état des appartements pour intervention)
+  Administrateur -- (Suivi des états des appartements)
+
+  Administrateur -- (Automatisation de la tarification)
+
+  Locataire -- (Communication avec propriétaire)
+  Proprietaire -- (Communication avec locataire)
+
+  Administrateur -- (Attribution de tâches aux prestataires)
+  Prestataire -- (Consulter ses tâches)
+
+  Administrateur -- (Rapports et statistiques)
+
+  ' Cas ajoutés pour nouveaux acteurs
+  AgentImmobilier -- (Gestion des annonces d'appartements)
+  AgentImmobilier -- (Organisation des visites)
+  AgentImmobilier -- (Négociation des contrats)
+  AgentImmobilier -- (Suivi des dossiers)
+
+  Syndic -- (Gestion des parties communes)
+  Syndic -- (Gestion des charges et travaux)
+
+  ServiceComptable -- (Gestion des paiements et facturations)
+  ServiceComptable -- (Gestion des quittances)
+  ServiceComptable -- (Déclarations fiscales et comptabilité)
+}
+
+@enduml
