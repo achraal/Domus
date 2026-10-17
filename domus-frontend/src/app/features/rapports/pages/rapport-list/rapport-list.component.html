@@ -1,0 +1,95 @@
+<div class="container my-4">
+  <h2>Rapports et Statistiques de Performance</h2>
+
+  <div class="row mt-4">
+    <!-- Générateur de Rapport (Admin) -->
+    <div class="col-md-5 mb-4">
+      <div class="card shadow-sm">
+        <div class="card-header bg-dark text-white">
+          <h5 class="mb-0">Générer un Rapport Périodique</h5>
+        </div>
+        <div class="card-body">
+          @if (succes) { <div class="alert alert-success">{{ succes }}</div> }
+          @if (erreur) { <div class="alert alert-danger">{{ erreur }}</div> }
+
+          <form [formGroup]="rapportForm" (ngSubmit)="generer()">
+            <div class="mb-3">
+              <label class="form-label">Titre du Rapport</label>
+              <input type="text" class="form-control" formControlName="titre" placeholder="Ex: Bilan Mensuel Octobre" />
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">Type de Rapport</label>
+              <select class="form-select" formControlName="typeRapport">
+                @for (t of typesRapport; track t) {
+                  <option [value]="t">{{ t }}</option>
+                }
+              </select>
+            </div>
+
+            <div class="row mb-3">
+              <div class="col">
+                <label class="form-label">Date Début</label>
+                <input type="date" class="form-control" formControlName="dateDebut" />
+              </div>
+              <div class="col">
+                <label class="form-label">Date Fin</label>
+                <input type="date" class="form-control" formControlName="dateFin" />
+              </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100" [disabled]="rapportForm.invalid || generationEnCours">
+              {{ generationEnCours ? 'Génération...' : 'Générer le Rapport' }}
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Liste des Rapports Générés -->
+    <div class="col-md-7 mb-4">
+      <div class="card shadow-sm">
+        <div class="card-header bg-secondary text-white">
+          <h5 class="mb-0">Rapports Disponibles</h5>
+        </div>
+        <div class="card-body p-0">
+          @if (chargement) { <div class="p-3">Chargement des rapports...</div> }
+
+          @if (!chargement && rapports.length === 0) {
+            <div class="p-3 text-muted">Aucun rapport généré.</div>
+          }
+
+          @if (!chargement && rapports.length > 0) {
+            <div class="table-responsive">
+              <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                <tr>
+                  <th>Titre & Type</th>
+                  <th>Période</th>
+                  <th>Chiffres Clés</th>
+                </tr>
+                </thead>
+                <tbody>
+                  @for (r of rapports; track r.id) {
+                    <tr>
+                      <td>
+                        <strong>{{ r.titre }}</strong><br>
+                        <span class="badge bg-info text-dark">{{ r.typeRapport }}</span>
+                      </td>
+                      <td>Du {{ r.dateDebut | date:'dd/MM/yy' }}<br>au {{ r.dateFin | date:'dd/MM/yy' }}</td>
+                      <td>
+                        @if (r.revenuTotal !== undefined) { <div>Revenu: <strong>{{ r.revenuTotal }} DH</strong></div> }
+                        @if (r.totalReservations !== undefined) { <div>Réservations: <strong>{{ r.totalReservations }}</strong></div> }
+                        @if (r.tauxOccupation !== undefined) { <div>Occupation: <strong>{{ r.tauxOccupation }}%</strong></div> }
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

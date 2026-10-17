@@ -1,0 +1,103 @@
+<div class="container my-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Suivi de l'État de l'Appartement (Annonce #{{ idAnnonce }})</h2>
+    <a routerLink="/annonces" class="btn btn-outline-secondary">← Retour aux annonces</a>
+  </div>
+
+  <div class="row">
+    <!-- Colonne 1: Formulaire de mise à jour (Si Propriétaire ou Admin) -->
+    @if (authService.aLeRole('PROPRIETAIRE') || authService.aLeRole('ADMINISTRATEUR')) {
+      <div class="col-md-5 mb-4">
+        <div class="card shadow-sm">
+          <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">Mettre à jour l'état</h5>
+          </div>
+          <div class="card-body">
+            @if (succes) {
+              <div class="alert alert-success">{{ succes }}</div>
+            }
+            @if (erreur) {
+              <div class="alert alert-danger">{{ erreur }}</div>
+            }
+
+            <form [formGroup]="statutForm" (ngSubmit)="soumettreChangement()">
+              <div class="mb-3">
+                <label class="form-label fw-bold">Nouveau statut</label>
+                <select class="form-select" formControlName="statut">
+                  @for (st of statutsDisponibles; track st) {
+                    <option [value]="st">{{ st }}</option>
+                  }
+                </select>
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label fw-bold">Commentaire / Motif</label>
+                <textarea class="form-control" rows="3" formControlName="commentaire" placeholder="Ex: Travaux de peinture en cours..."></textarea>
+              </div>
+
+              <button type="submit" class="btn btn-primary w-100" [disabled]="statutForm.invalid || soumissionEnCours">
+                {{ soumissionEnCours ? 'Enregistrement...' : 'Valider le nouveau statut' }}
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- Colonne 2: État actuel & Historique -->
+    <div [ngClass]="(authService.aLeRole('PROPRIETAIRE') || authService.aLeRole('ADMINISTRATEUR')) ? 'col-md-7' : 'col-12'">
+      <!-- État actuel -->
+      <div class="card shadow-sm mb-4">
+        <div class="card-body d-flex justify-content-between align-items-center">
+          <h5 class="mb-0">État Actuel :</h5>
+          @if (etatActuel) {
+            <span class="badge fs-6" [ngClass]="getBadgeClass(etatActuel.statut)">
+              {{ etatActuel.statut }}
+            </span>
+          } @else {
+            <span class="badge bg-secondary fs-6">Non spécifié</span>
+          }
+        </div>
+      </div>
+
+      <!-- Historique des états -->
+      <div class="card shadow-sm">
+        <div class="card-header bg-dark text-white">
+          <h5 class="mb-0">Historique des états</h5>
+        </div>
+        <div class="card-body p-0">
+          @if (chargement) {
+            <div class="p-3 text-muted">Chargement de l'historique...</div>
+          }
+
+          @if (!chargement && historique.length === 0) {
+            <div class="p-3 text-muted">Aucun historique disponible pour cette annonce.</div>
+          }
+
+          @if (!chargement && historique.length > 0) {
+            <ul class="list-group list-group-flush">
+              @for (item of historique; track item.id) {
+                <li class="list-group-item d-flex justify-content-between align-items-start py-3">
+                  <div class="ms-2 me-auto">
+                    <div class="fw-bold">
+                      <span class="badge me-2" [ngClass]="getBadgeClass(item.statut)">
+                        {{ item.statut }}
+                      </span>
+                      <small class="text-muted">par {{ item.modifiePar || 'Système' }}</small>
+                    </div>
+                    @if (item.commentaire) {
+                      <p class="mb-0 text-secondary mt-1 small"><em>" {{ item.commentaire }} "</em></p>
+                    }
+                  </div>
+                  <span class="badge bg-light text-dark border">
+                    {{ item.dateChangement | date:'dd/MM/yyyy HH:mm' }}
+                  </span>
+                </li>
+              }
+            </ul>
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

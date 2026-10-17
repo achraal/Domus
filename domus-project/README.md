@@ -1,6 +1,6 @@
 # ⚙️ DOMUS Backend API — Spring Boot 4 & Java 21
 
-> **Moteur API RESTful du système DOMUS**, conçu selon les principes de la Conception Orientée Objet (COO) et architecturé en couches découplées avec sécurité par jeton JWT stateless et persistance relationnelle PostgreSQL.
+> **Moteur API RESTful du système DOMUS**, conçu selon les principes de la Conception Orientée Objet (COO) et architecturé en couches découplées avec sécurité par jeton JWT stateless, configuration CORS pour Angular, et persistance relationnelle PostgreSQL.
 
 [![Java](https://img.shields.io/badge/Java-21-ED8B00?style=for-the-badge&logo=openjdk&logoColor=white)](https://openjdk.org/)
 [![Spring Boot](https://img.shields.io/badge/Spring_Boot-4.1.1-6DB33F?style=for-the-badge&logo=springboot&logoColor=white)](https://spring.io/projects/spring-boot)
@@ -15,6 +15,7 @@
 - [Architecture & Principes de Conception](#-architecture--principes-de-conception)
 - [Modèle de Données & Entités JPA](#-modèle-de-données--entités-jpa)
 - [Configuration & Variables d'Environnement](#-configuration--variables-denvironnement)
+- [Configuration CORS (`WebConfig`)](#-configuration-cors-webconfig)
 - [Matrice de Sécurité & Rôles](#-matrice-de-sécurité--rôles)
 - [Référentiel Complet de l'API REST](#-référentiel-complet-de-lapi-rest)
   - [1. Authentification (`/api/auth`)](#1-authentification-apiauth)
@@ -25,7 +26,7 @@
   - [6. Tarification Saisonnière (`/api/tarifications`)](#6-tarification-saisonnière-apitarifications)
   - [7. Tâches Prestataires (`/api/taches`)](#7-tâches-prestataires-apitaches)
   - [8. Communication & Notifications (`/api/communication`)](#8-communication--notifications-apicommunication)
-  - [9. Utilisateurs (`/api/utilisateurs`)](#9-utilisateurs-apiutilisateurs)
+  - [9. Utilisateurs & Administration (`/api/utilisateurs`)](#9-utilisateurs--administration-apiutilisateurs)
   - [10. Rapports & Statistiques (`/api/rapports`)](#10-rapports--statistiques-apirapports)
 - [Installation, Compilation et Exécution](#-installation-compilation-et-exécution)
 - [Tests](#-tests)
@@ -48,11 +49,32 @@ Le backend suit une **architecture en couches (N-Tier)** stricte assurant une fo
 [ Entités JPA ]       --> Modélisation relationnelle avec annotations Jakarta Persistence
 ```
 
+```
+domus-project/
+├── src/main/java/com/achraf/domusproject/
+│   ├── config/                      # Sécurité JWT, WebConfig (CORS), SecurityConfig
+│   │   ├── JwtAuthenticationFilter.java
+│   │   ├── JwtService.java
+│   │   ├── SecurityConfig.java
+│   │   └── WebConfig.java           # Configuration CORS globale pour Angular (4200)
+│   ├── controllers/                 # Contrôleurs REST (10 contrôleurs métier)
+│   ├── dto/                         # Data Transfer Objects (Request & Response)
+│   ├── entities/                    # Entités relationnelles JPA Hibernate
+│   ├── enums/                       # Rôles, Statuts, Saisons, Types de rapports
+│   ├── repository/                  # Repositories Spring Data JPA
+│   └── service/                     # Interfaces et implémentations de logique métier
+├── src/main/resources/              # application.properties & templates quittances
+├── .env                             # Variables d'environnement locales
+├── pom.xml                          # Dépendances Maven (Spring Boot 4, JJWT, PostgreSQL)
+└── README.md
+```
+
 ### Caractéristiques Techniques Clefs :
 - **Java 21 LTS** : Utilisation des fonctionnalités modernes du langage.
 - **DTO Pattern** : Les entités du domaine ne sont jamais directement exposées sur le réseau afin de prévenir toute fuite de données (ex: mot de passe haché) et surconsommation de bande passante.
 - **Sécurité Déclarative** : Contrôle d'accès granulaire par méthode grâce à `@PreAuthorize("hasRole('...')")`.
 - **Stateless Session** : L'API ne stocke aucun état de session sur le serveur (`SessionCreationPolicy.STATELESS`), facilitant la scalabilité horizontale.
+- **Support Cross-Origin (CORS)** : Configuration WebMvc native pour interconnecter le client Angular (`http://localhost:4200`).
 
 ---
 
@@ -101,7 +123,7 @@ DB_USERNAME=postgres
 DB_PASSWORD=votre_mot_de_passe_secret
 
 # Sécurité & Token JWT
-JWT_SECRET=********************************
+JWT_SECRET=147e71706f7d4c5de8c1d61051a2884b6e42552394899ec6e43352d1d577ee9e
 JWT_EXPIRATION=86400000 # 24 heures en millisecondes
 ```
 
@@ -125,6 +147,33 @@ server.port=8080
 
 ---
 
+## 🌐 Configuration CORS (`WebConfig`)
+
+Le backend intègre une configuration CORS dédiée pour autoriser de manière fluide le client web Angular (`http://localhost:4200`) :
+
+```java
+package com.achraf.domusproject.config;
+
+import org.springframework.context.annotation.Configuration;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+
+@Configuration
+public class WebConfig implements WebMvcConfigurer {
+
+    @Override
+    public void addCorsMappings(CorsRegistry registry) {
+        registry.addMapping("/api/**")
+                .allowedOrigins("http://localhost:4200")
+                .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+                .allowedHeaders("*")
+                .allowCredentials(true);
+    }
+}
+```
+
+---
+
 ## 🔐 Matrice de Sécurité & Rôles
 
 Les requêtes vers les endpoints protégés doivent impérativement inclure le header HTTP suivant :
@@ -138,7 +187,7 @@ Authorization: Bearer <token_jwt>
 | **`LOCATAIRE`** | Création de réservations, consultation de ses propres réservations, paiements, quittances, messagerie. |
 | **`PROPRIETAIRE`** | Création et mise à jour de ses annonces, acceptation/refus des réservations, gestion des tarifs, déclaration d'état et assignation de tâches. |
 | **`PRESTATAIRE`** | Consultation de ses interventions planifiées et mise à jour de leur statut. |
-| **`ADMINISTRATEUR`** | Accès total : gestion de tous les comptes, suppression d'annonces, audits, génération de rapports globaux. |
+| **`ADMINISTRATEUR`** | Accès total : gestion de tous les comptes utilisateurs, suppression d'annonces, audits, génération de rapports globaux. |
 
 ---
 
@@ -294,14 +343,14 @@ Vérifie les identifiants et génère le token JWT.
 
 ---
 
-### 9. Utilisateurs (`/api/utilisateurs`)
+### 9. Utilisateurs & Administration (`/api/utilisateurs`)
 
 | Méthode | URL | Rôle Requis | Description |
 | :--- | :--- | :--- | :--- |
-| `GET` | `/api/utilisateurs` | `ADMINISTRATEUR` | Liste exhaustive des utilisateurs enregistrés |
-| `GET` | `/api/utilisateurs/{id}` | Authentifié | Détails du profil utilisateur |
+| `GET` | `/api/utilisateurs` | `ADMINISTRATEUR` | Liste exhaustive des utilisateurs enregistrés (utilisée par le module frontend Admin) |
+| `GET` | `/api/utilisateurs/{id}` | Authentifié | Détails d'un profil utilisateur |
 | `PUT` | `/api/utilisateurs/{id}` | Authentifié | Mise à jour des informations de profil |
-| `DELETE`| `/api/utilisateurs/{id}` | `ADMINISTRATEUR` | Suppression d'un compte utilisateur |
+| `DELETE`| `/api/utilisateurs/{id}` | `ADMINISTRATEUR` | Suppression définitive d'un compte utilisateur |
 
 ---
 
@@ -309,7 +358,7 @@ Vérifie les identifiants et génère le token JWT.
 
 | Méthode | URL | Rôle Requis | Description |
 | :--- | :--- | :--- | :--- |
-| `POST` | `/api/rapports/generer` | `ADMINISTRATEUR` | Générer un nouveau rapport d'activité |
+| `POST` | `/api/rapports/generer` | `ADMINISTRATEUR` | Générer un rapport d'activité (Revenus, Taux d'occupation) |
 | `GET` | `/api/rapports` | `ADMINISTRATEUR` | Consulter les rapports archivés |
 
 ---
@@ -349,7 +398,7 @@ JWT_EXPIRATION=86400000
 ./mvnw spring-boot:run
 ```
 
-L'API est prête et écoute sur `http://localhost:8080`.
+L'API démarre et écoute sur `http://localhost:8080`.
 
 ---
 

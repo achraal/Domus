@@ -1,0 +1,108 @@
+<div class="container my-4">
+  <h2>Gestion des Interventions & Tâches Prestataires</h2>
+
+  <div class="row mt-4">
+    <!-- Formulaire d'assignation (Propriétaire / Admin) -->
+    @if (authService.aLeRole('PROPRIETAIRE') || authService.aLeRole('ADMINISTRATEUR')) {
+      <div class="col-md-5 mb-4">
+        <div class="card shadow-sm">
+          <div class="card-header bg-dark text-white">
+            <h5 class="mb-0">Assigner une nouvelle tâche</h5>
+          </div>
+          <div class="card-body">
+            @if (succes) { <div class="alert alert-success">{{ succes }}</div> }
+            @if (erreur) { <div class="alert alert-danger">{{ erreur }}</div> }
+
+            <form [formGroup]="tacheForm" (ngSubmit)="assignerTache()">
+              <div class="mb-3">
+                <label class="form-label">ID Annonce</label>
+                <input type="number" class="form-control" formControlName="annonceId" placeholder="Ex: 12" />
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label">ID Prestataire</label>
+                <input type="number" class="form-control" formControlName="prestataireId" placeholder="Ex: 5" />
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label">Titre de l'intervention</label>
+                <input type="text" class="form-control" formControlName="titre" placeholder="Ex: Nettoyage complet post-séjour" />
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label">Date de l'intervention</label>
+                <input type="date" class="form-control" formControlName="dateIntervention" />
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label">Description / Consignes</label>
+                <textarea class="form-control" rows="3" formControlName="description"></textarea>
+              </div>
+
+              <button type="submit" class="btn btn-primary w-100" [disabled]="tacheForm.invalid || soumissionEnCours">
+                {{ soumissionEnCours ? 'Assignation...' : 'Assigner la tâche' }}
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- Liste des tâches -->
+    <div [ngClass]="(authService.aLeRole('PROPRIETAIRE') || authService.aLeRole('ADMINISTRATEUR')) ? 'col-md-7' : 'col-12'">
+      <div class="card shadow-sm">
+        <div class="card-header bg-secondary text-white">
+          <h5 class="mb-0">Liste des Interventions</h5>
+        </div>
+        <div class="card-body p-0">
+          @if (chargement) { <div class="p-3">Chargement des tâches...</div> }
+
+          @if (!chargement && taches.length === 0) {
+            <div class="p-3 text-muted">Aucune intervention assignée.</div>
+          }
+
+          @if (!chargement && taches.length > 0) {
+            <div class="table-responsive">
+              <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                <tr>
+                  <th>Titre & Annonce</th>
+                  <th>Date</th>
+                  <th>Statut</th>
+                  <th>Actions</th>
+                </tr>
+                </thead>
+                <tbody>
+                  @for (tache of taches; track tache.id) {
+                    <tr>
+                      <td>
+                        <strong>{{ tache.titre }}</strong><br>
+                        <small class="text-muted">Annonce #{{ tache.annonceId }} | Prestataire #{{ tache.prestataireId }}</small>
+                      </td>
+                      <td>{{ tache.dateIntervention | date:'dd/MM/yyyy' }}</td>
+                      <td>
+                        <span class="badge" [ngClass]="getBadgeClass(tache.statut)">{{ tache.statut }}</span>
+                      </td>
+                      <td>
+                        <!-- Boutons de changement de statut pour Prestataire / Admin -->
+                        @if (authService.aLeRole('PRESTATAIRE') || authService.aLeRole('ADMINISTRATEUR')) {
+                          <select class="form-select form-select-sm" [value]="tache.statut" (change)="changerStatut(tache, $any($event.target).value)">
+                            @for (s of statuts; track s) {
+                              <option [value]="s">{{ s }}</option>
+                            }
+                          </select>
+                        } @else {
+                          <span class="text-muted small">Consultation</span>
+                        }
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

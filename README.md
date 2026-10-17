@@ -1,5 +1,5 @@
 # 🏢 DOMUS — Système de Gestion de Location d'Appartements
-> **Projet de Conception Orientée Objet (COO)** — Une plateforme full-stack moderne, sécurisée et modulaire pour la gestion locative immobilière, les réservations saisonnières, la gestion des états des logements et le suivi financier.
+> **Projet de Conception Orientée Objet (COO)** — Une plateforme full-stack moderne, sécurisée et modulaire pour la gestion locative immobilière, les réservations saisonnières, la gestion des états des logements, les interventions techniques et le suivi financier.
 
 [![Java](https://img.shields.io/badge/Java-21-ED8B00?style=for-the-badge&logo=openjdk&logoColor=white)](https://openjdk.org/)
 [![Spring Boot](https://img.shields.io/badge/Spring_Boot-4.1.1-6DB33F?style=for-the-badge&logo=springboot&logoColor=white)](https://spring.io/projects/spring-boot)
@@ -14,18 +14,18 @@
 
 ## 📌 Sommaire
 - [Vue d'ensemble](#-vue-densemble)
-- [Fonctionnalités Principales](#-fonctionnalités-principales)
+- [Fonctionnalités Principales & Modules Métier](#-fonctionnalités-principales--modules-métier)
 - [Acteurs & Rôles](#-acteurs--rôles)
 - [Architecture & Conception (UML)](#-architecture--conception-uml)
 - [Structure du Dépôt](#-structure-du-dépôt)
 - [Technologies & Stack Technique](#-technologies--stack-technique)
+- [Sécurité, Guards & Authentification JWT](#-sécurité-guards--authentification-jwt)
 - [Guide de Démarrage Rapide](#-guide-de-démarrage-rapide)
   - [Prérequis](#prérequis)
   - [1. Configuration de la Base de Données](#1-configuration-de-la-base-de-données)
   - [2. Démarrage du Backend (Spring Boot)](#2-démarrage-du-backend-spring-boot)
   - [3. Démarrage du Frontend (Angular)](#3-démarrage-du-frontend-angular)
-- [Sécurité & Authentification](#-sécurité--authentification)
-- [Aperçu des Endpoints de l'API](#-aperçu-des-endpoints-de-lapi)
+- [Aperçu des Endpoints de l'API REST](#-aperçu-des-endpoints-de-lapi-rest)
 - [Documentation & Livrables](#-documentation--livrables)
 
 ---
@@ -33,34 +33,35 @@
 ## 🌟 Vue d'ensemble
 
 **DOMUS** est une application web d'envergure conçue dans le cadre du module **Conception Orientée Objet (COO)**. Elle répond aux problématiques réelles de gestion des biens immobiliers locatifs en automatisant l'intégralité du cycle de location :
-1. Mise en ligne et gestion des annonces de biens immobiliers avec tarification intelligente.
-2. Cycle complet de réservation (demande, validation, annulation, politique de disponibilité).
-3. Gestion financière sécurisée (paiements, remboursements de caution, génération automatique de quittances).
-4. Suivi technique et cycle de vie des appartements (libre, occupé, travaux / maintenance).
-5. Coordination opérationnelle avec des prestataires de services (ménage, réparations).
-6. Messagerie interne et système de notifications en temps réel entre utilisateurs.
-7. Outils décisionnels et rapports statistiques pour l'administration et les propriétaires.
+1. **Mise en ligne et gestion des annonces** de biens immobiliers avec tarification intelligente.
+2. **Cycle complet de réservation** (demande, vérification automatique de disponibilité, validation propriétaire/admin, annulation).
+3. **Gestion financière sécurisée** (règlements en ligne, cautions/dépôts de garantie, quittances de loyer officielles).
+4. **Suivi technique et cycle de vie des appartements** (libre, occupé, travaux / maintenance).
+5. **Coordination opérationnelle avec des prestataires** (ménage, plomberie, réparations).
+6. **Messagerie interne et système de notifications** contextuelles en temps réel entre utilisateurs.
+7. **Outils décisionnels et rapports statistiques** pour l'administration et les propriétaires.
 
 ---
 
-## 🚀 Fonctionnalités Principales
+## 🚀 Fonctionnalités Principales & Modules Métier
 
-| Module | Description |
-| :--- | :--- |
-| **🏠 Gestion des Annonces** | Création, édition, suppression et consultation d'annonces détaillées (photos, commodités, superficie, localisation, prix de base). |
-| **📅 Moteur de Réservations** | Réservation avec vérification automatique de disponibilité, validation propriétaire/admin, et annulation gérée. |
-| **📈 Tarification Dynamique & Saisonnière** | Définition de règles tarifaires selon les saisons (Été, Hiver, etc.) et promotions avec calcul automatique du prix par nuitée. |
-| **💳 Paiements & Quittances** | Règlement sécurisé, gestion des cautions (dépôts de garantie), émission et téléchargement de quittances de loyer. |
-| **🔧 Suivi de l'État des Logements** | Suivi historique et temps réel de l'état des appartements (*Libre*, *Occupé*, *En maintenance*) avec commentaires d'inspection. |
-| **🛠️ Gestion des Tâches Prestataires** | Assignation de missions de maintenance/nettoyage à des prestataires dédiés avec suivi d'avancement (*Planifiée*, *En cours*, *Terminée*). |
-| **💬 Messagerie & Notifications** | Échanges directs entre locataires et propriétaires, complétés par des notifications contextuelles consultables et marquables comme lues. |
-| **📊 Rapports & Statistiques** | Génération de rapports analytiques (Revenus, Taux d'occupation, Réservations) sur des périodes mensuelles, trimestrielles ou annuelles. |
+| Module | Fonctionnalités Backend & Frontend | Interfaces Angular Associées |
+| :--- | :--- | :--- |
+| **🏠 Gestion des Annonces** | Publication, modification, suppression et catalogue des biens avec filtres et photos. | `/annonces`<br>`/annonces/nouvelle`<br>`/annonces/editer/:id` |
+| **📅 Moteur de Réservations** | Réservation avec calcul des dates, acceptation/refus propriétaire, historique séjours. | `/reservations/mes-reservations`<br>`/reservations/nouvelle/:id`<br>`/reservations/annonce/:id` |
+| **📈 Tarification Dynamique** | Tarifs saisonniers (Été, Hiver, etc.), calcul automatique du coût par nuitée et promotions. | `/annonces/:id/tarifications` |
+| **💳 Paiements & Quittances** | Règlements multi-méthodes (CB, Virement, PayPal, Espèces), cautions et génération de quittances. | `/reservations/:id/paiements` |
+| **🔧 Suivi de l'État des Logements** | État en vigueur (`LIBRE`, `OCCUPE`, `EN_MAINTENANCE`), suivi d'inspections et historique. | `/annonces/:id/etats` |
+| **🛠️ Gestion des Tâches** | Mandatement de prestataires, planification et suivi de progression (`PLANIFIEE`, `EN_COURS`, `TERMINEE`). | `/taches` |
+| **💬 Messagerie & Notifications** | Échanges directs entre locataires et propriétaires, boîte de notifications unifiée. | `/communication` |
+| **👥 Administration des Comptes** | Supervision du parc d'utilisateurs, gestion des privilèges et suppressions de comptes. | `/admin/utilisateurs` |
+| **📊 Rapports & Statistiques** | Bilans périodiques (revenus, taux d'occupation, volume des réservations). | `/admin/rapports` |
 
 ---
 
 ## 👥 Acteurs & Rôles
 
-Le système s'articule autour d'une matrice de rôles stricte gérée via Spring Security RBAC :
+Le système s'articule autour d'une matrice de rôles stricte gérée via Spring Security RBAC et protégée côté client par Angular `roleGuard` :
 
 ```mermaid
 graph TD
@@ -79,10 +80,10 @@ graph TD
     Admin -.->|Supervise tout le parc| DOMUS((Système DOMUS))
 ```
 
-- **Locataire (`ROLE_LOCATAIRE`)** : Recherche des biens, effectue des demandes de réservation, règle ses séjours, consulte ses quittances et contacte le propriétaire.
-- **Propriétaire (`ROLE_PROPRIETAIRE`)** : Publie ses annonces, valide les réservations, applique des tarifs saisonniers, mandate des prestataires et suit ses revenus.
-- **Administrateur (`ROLE_ADMINISTRATEUR`)** : Gouvernance complète de la plateforme, gestion des comptes utilisateurs, supervision globale et génération de rapports financiers.
-- **Prestataire (`ROLE_PRESTATAIRE`)** : Consultation de son planning d'interventions, mise à jour des états de réalisation des tâches.
+- **Locataire (`ROLE_LOCATAIRE`)** : Recherche des biens, réserve des séjours, paie en ligne, télécharge ses quittances et échange par messagerie.
+- **Propriétaire (`ROLE_PROPRIETAIRE`)** : Publie ses annonces, valide les réservations, ajuste ses tarifs saisonniers, mandate des prestataires et suit ses revenus.
+- **Administrateur (`ROLE_ADMINISTRATEUR`)** : Gouvernance complète de la plateforme, gestion des comptes utilisateurs, suppression d'annonces non conformes et génération de rapports.
+- **Prestataire (`ROLE_PRESTATAIRE`)** : Consultation de son planning d'interventions et mise à jour de l'état d'avancement des tâches.
 - **Agent Immobilier, Syndic & Service Comptable** : Acteurs partenaires intervenant dans la gestion des visites, parties communes et conformité comptable.
 
 ---
@@ -102,7 +103,7 @@ Conformément à la méthodologie **COO**, la conception du système a été rig
 ## 📂 Structure du Dépôt
 
 ```
-COO/
+DOMUS/
 ├── Conception/                          # Dossier de conception UML
 │   ├── Diagramme d'Activite/            # Diagramme d'activité (.png, code .txt)
 │   ├── Diagramme d'états-transition/    # Diagramme d'état (.png, code .txt)
@@ -118,10 +119,10 @@ COO/
 │
 ├── domus-project/                       # 🟢 BACKEND Spring Boot 4 / Java 21
 │   ├── src/main/java/com/achraf/domusproject/
-│   │   ├── config/                      # Sécurité JWT, CORS, SecurityConfig
-│   │   ├── controllers/                 # Contrôleurs REST (Auth, Annonce, etc.)
+│   │   ├── config/                      # Sécurité JWT, CORS (WebConfig), SecurityConfig
+│   │   ├── controllers/                 # 10 Contrôleurs REST (Auth, Annonce, etc.)
 │   │   ├── dto/                         # Request & Response Data Transfer Objects
-│   │   ├── entities/                    # Entités JPA (Hibernate)
+│   │   ├── entities/                    # Entités JPA Hibernate
 │   │   ├── enums/                       # Énumérations métier (Rôles, Statuts)
 │   │   ├── repository/                  # Interfaces Spring Data JPA
 │   │   └── service/                     # Logique métier et implémentations
@@ -133,14 +134,30 @@ COO/
 └── domus-frontend/                      # 🔴 FRONTEND Angular 22 & Tailwind CSS
     ├── src/
     │   ├── app/
-    │   │   ├── core/                    # Intercepteurs (JWT), Services (Auth)
-    │   │   ├── app.routes.ts            # Routage de l'application
+    │   │   ├── core/                    # Noyau transverse (Guards, Intercepteurs, Modèles, Services)
+    │   │   │   ├── guards/              # role.guard.ts (Protection RBAC des routes)
+    │   │   │   ├── interceptors/        # auth.interceptor.ts (Bearer token automatique)
+    │   │   │   ├── models/              # Interfaces DTO TypeScript
+    │   │   │   └── services/            # Services HTTP injectables (Auth, Annonce, etc.)
+    │   │   ├── features/                # 10 modules fonctionnels avec interfaces dédiées
+    │   │   │   ├── admin/user-list/
+    │   │   │   ├── annonces/
+    │   │   │   ├── auth/ (login, signup)
+    │   │   │   ├── communication/
+    │   │   │   ├── etats/
+    │   │   │   ├── paiements/
+    │   │   │   ├── rapports/
+    │   │   │   ├── reservations/
+    │   │   │   ├── taches/
+    │   │   │   └── tarifications/
+    │   │   ├── app.config.ts            # Configuration des providers et intercepteurs
+    │   │   ├── app.routes.ts            # Table des routes et guards
     │   │   └── ...
     │   ├── environments/                # Configuration d'environnement (Dev/Prod)
-    │   ├── styles.css                   # Styles globaux & Tailwind imports
+    │   ├── styles.css                   # Directives globales Tailwind CSS
     │   └── main.ts                      # Point d'entrée Angular
     ├── package.json                     # Dépendances npm & scripts
-    ├── tailwind.config.js               # Configuration Tailwind CSS
+    ├── tailwind.config.js               # Configuration du thème Tailwind CSS
     └── README.md                        # Documentation détaillée Frontend
 ```
 
@@ -152,16 +169,32 @@ COO/
 - **Langage & Framework** : Java 21 LTS, Spring Boot 4.1.1
 - **Sécurité** : Spring Security 6, JJWT (`io.jsonwebtoken` 0.11.5), Hachage BCrypt
 - **ORM & Persistance** : Spring Data JPA, Hibernate, PostgreSQL Driver
+- **Intégration Web** : Configuration CORS native via `WebConfig.java` (`http://localhost:4200`)
 - **Productivité & Config** : Lombok, `spring-dotenv` (chargement `.env`)
 - **Gestionnaire de dépendances** : Apache Maven (wrapper `mvnw` inclus)
 
 ### Frontend
-- **Framework Web** : Angular 22 (Standalone Components)
+- **Framework Web** : Angular 22 (Architecture Standalone Components)
 - **Langage** : TypeScript 6.0
+- **Contrôle d'accès** : Guard fonctionnel `roleGuard` avec vérification dynamique des rôles
 - **Design & Ergonomie** : Tailwind CSS 3.4, PostCSS, Autoprefixer
-- **Communication Réseau** : Angular `HttpClient` avec intercepteur fonctionnel (`jwtInterceptor`)
+- **Communication Réseau** : Angular `HttpClient` avec intercepteur automatique `authInterceptor`
 - **Programmation Réactive** : RxJS 7.8
 - **Tests Unitaires** : Vitest & JSDOM
+
+---
+
+## 🔒 Sécurité, Guards & Authentification JWT
+
+L'application implémente un modèle d'authentification **Stateless** basé sur des JSON Web Tokens (JWT) :
+1. L'utilisateur s'enregistre via `POST /api/auth/inscription` ou s'authentifie via `POST /api/auth/login`.
+2. Le backend valide les identifiants et génère un jeton signé avec l'algorithme HMAC-SHA256, incluant les claims et le rôle.
+3. Le client Angular stocke le token dans `localStorage` et le transmet automatiquement dans chaque requête via `authInterceptor` :
+   ```http
+   Authorization: Bearer <votre_token_jwt>
+   ```
+4. Côté Angular, `roleGuard` filtre la navigation en vérifiant les rôles autorisés sur chaque route avant d'autoriser l'affichage du composant.
+5. Côté Spring Boot, `JwtAuthenticationFilter` intercepte la requête, valide la signature et peuple le `SecurityContextHolder`.
 
 ---
 
@@ -225,20 +258,7 @@ npm start
 
 ---
 
-## 🔒 Sécurité & Authentification
-
-L'application implémente un modèle d'authentification **Stateless** basé sur des JSON Web Tokens (JWT) :
-1. L'utilisateur s'enregistre via `POST /api/auth/inscription` ou s'authentifie via `POST /api/auth/login`.
-2. Le backend valide les identifiants et génère un jeton signé avec l'algorithme HMAC-SHA256, incluant les claims et le rôle.
-3. Le client Angular stocke le token dans `localStorage` et le transmet automatiquement dans chaque requête via `jwtInterceptor` :
-   ```http
-   Authorization: Bearer <votre_token_jwt>
-   ```
-4. Côté Spring Boot, `JwtAuthenticationFilter` intercepte la requête, valide la signature et peuple le `SecurityContextHolder`.
-
----
-
-## 📡 Aperçu des Endpoints de l'API
+## 📡 Aperçu des Endpoints de l'API REST
 
 Tous les endpoints sont préfixés par `/api` :
 
@@ -254,9 +274,12 @@ Tous les endpoints sont préfixés par `/api` :
 | `POST, GET, DELETE /api/tarifications` | `PROPRIETAIRE`, `ADMINISTRATEUR` | Tarifs saisonniers et calcul de prix |
 | `POST, PUT, GET /api/taches` | `PROPRIETAIRE`, `PRESTATAIRE`, `ADMIN` | Assignation et suivi des interventions |
 | `POST, GET /api/communication/message` | Authentifié | Envoi et réception de messages directs |
+| `GET, DELETE /api/utilisateurs` | `ADMINISTRATEUR` | Supervision et gestion des comptes utilisateurs |
 | `POST, GET /api/rapports` | `ADMINISTRATEUR` | Génération de statistiques et rapports globaux |
 
-👉 *Pour la documentation détaillée des payloads DTO et requêtes d'exemple, consultez le [README Backend](./domus-project/README.md).*
+👉 *Pour les détails techniques complets, consultez :*
+- 📗 [**README du Backend (`domus-project/README.md`)**](./domus-project/README.md)
+- 🎨 [**README du Frontend (`domus-frontend/README.md`)**](./domus-frontend/README.md)
 
 ---
 

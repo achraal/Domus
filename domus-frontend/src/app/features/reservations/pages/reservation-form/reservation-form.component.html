@@ -1,0 +1,38 @@
+<div class="container my-4 col-md-6">
+  <div class="card shadow-sm">
+    <div class="card-header bg-primary text-white">
+      <h4 class="mb-0">Réserver le logement #{{ annonceId }}</h4>
+    </div>
+    <div class="card-body">
+      @if (erreur) {
+        <div class="alert alert-danger">{{ erreur }}</div>
+      }
+
+      <form [formGroup]="reservationForm" (ngSubmit)="soumettre()">
+        <div class="mb-3">
+          <label class="form-label">Date de début</label>
+          <input type="date" class="form-control" formControlName="dateDebut" />
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">Date de fin</label>
+          <input type="date" class="form-control" formControlName="dateFin" />
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">Remarques / Demandes particulières</label>
+          <textarea class="form-control" rows="3" formControlName="remarques"></textarea>
+        </div>
+
+        <div class="d-flex justify-content-between">
+          <button type="button" class="btn btn-secondary" (click)="annuler()">
+            Annuler
+          </button>
+          <button type="submit" class="btn btn-success" [disabled]="reservationForm.invalid || soumissionEnCours">
+            {{ soumissionEnCours ? 'Envoi...' : 'Confirmer la réservation' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

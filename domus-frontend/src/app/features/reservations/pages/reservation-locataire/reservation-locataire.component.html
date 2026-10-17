@@ -1,0 +1,69 @@
+<!-- src/app/features/reservations/pages/reservation-locataire/reservation-locataire.component.html -->
+<div class="container my-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Mes Demandes de Réservation</h2>
+    <a routerLink="/annonces" class="btn btn-outline-primary">Explorer les annonces</a>
+  </div>
+
+  @if (chargement) {
+    <div class="alert alert-info">Chargement de vos réservations...</div>
+  }
+
+  @if (erreur) {
+    <div class="alert alert-danger">{{ erreur }}</div>
+  }
+
+  @if (!chargement && reservations.length === 0) {
+    <div class="text-center my-5">
+      <p class="text-muted fs-5">Vous n'avez effectué aucune réservation pour le moment.</p>
+    </div>
+  }
+
+  @if (!chargement && reservations.length > 0) {
+    <div class="table-responsive shadow-sm rounded">
+      <table class="table table-hover align-middle mb-0">
+        <thead class="table-light">
+        <tr>
+          <th>#</th>
+          <th>Annonce</th>
+          <th>Date Début</th>
+          <th>Date Fin</th>
+          <th>Prix Total</th>
+          <th>Statut</th>
+          <th>Actions</th>
+        </tr>
+        </thead>
+        <tbody>
+          @for (res of reservations; track res.id) {
+            <tr>
+              <td><strong>#{{ res.id }}</strong></td>
+              <td>{{ res.titreAnnonce || ('Annonce n°' + res.annonceId) }}</td>
+              <td>{{ res.dateDebut | date:'dd/MM/yyyy' }}</td>
+              <td>{{ res.dateFin | date:'dd/MM/yyyy' }}</td>
+              <td class="fw-bold">{{ res.prixTotal ? (res.prixTotal + ' DH') : 'N/A' }}</td>
+              <td>
+                <span class="badge" [ngClass]="getBadgeClass(res.statut)">
+                  {{ res.statut }}
+                </span>
+              </td>
+              <td>
+                <div class="btn-group">
+                  <!-- Bouton Paiement & Quittances -->
+                  <a [routerLink]="['/reservations', res.id, 'paiements']" class="btn btn-sm btn-outline-success">
+                    Paiements
+                  </a>
+
+                  @if (res.statut === statuts.EN_ATTENTE || res.statut === statuts.CONFIRMEE) {
+                    <button (click)="annuler(res.id)" class="btn btn-sm btn-outline-danger">
+                      Annuler
+                    </button>
+                  }
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>

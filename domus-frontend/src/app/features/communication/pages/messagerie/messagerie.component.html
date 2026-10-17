@@ -1,0 +1,79 @@
+<div class="container my-4">
+  <h2>Communication & Notifications</h2>
+
+  <div class="row mt-4">
+    <!-- Colonne Messagerie -->
+    <div class="col-md-7 mb-4">
+      <div class="card shadow-sm h-100">
+        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+          <h5 class="mb-0">Messagerie Interne</h5>
+          <button (click)="chargerMessages()" class="btn btn-sm btn-light">Rafraîchir</button>
+        </div>
+        <div class="card-body d-flex flex-column" style="max-height: 500px;">
+          <!-- Zone d'affichage des messages -->
+          <div class="flex-grow-1 overflow-auto mb-3 p-2 bg-light rounded border">
+            @if (chargementMessages) { <p class="text-muted">Chargement des messages...</p> }
+
+            @if (!chargementMessages && messages.length === 0) {
+              <p class="text-muted text-center my-4">Aucun message échangé.</p>
+            }
+
+            @for (msg of messages; track msg.id) {
+              <div class="mb-2 p-2 rounded" [ngClass]="msg.expediteurId === currentUserId ? 'bg-primary text-white ms-auto w-75' : 'bg-white text-dark border me-auto w-75'">
+                <div class="d-flex justify-content-between small opacity-75 mb-1">
+                  <strong>{{ msg.expediteurId === currentUserId ? 'Moi' : (msg.expediteurNom || 'Utilisateur #' + msg.expediteurId) }}</strong>
+                  <span>{{ msg.dateEnvoi | date:'dd/MM HH:mm' }}</span>
+                </div>
+                <div>{{ msg.contenu }}</div>
+              </div>
+            }
+          </div>
+
+          <!-- Formulaire d'envoi -->
+          <form [formGroup]="messageForm" (ngSubmit)="envoyer()">
+            <div class="mb-2">
+              <input type="number" class="form-control form-control-sm" formControlName="destinataireId" placeholder="ID Destinataire" />
+            </div>
+            <div class="input-group">
+              <input type="text" class="form-control" formControlName="contenu" placeholder="Écrivez votre message..." />
+              <button type="submit" class="btn btn-primary" [disabled]="messageForm.invalid || envoiEnCours">Envoyer</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Colonne Centre de Notifications -->
+    <div class="col-md-5 mb-4">
+      <div class="card shadow-sm h-100">
+        <div class="card-header bg-dark text-white">
+          <h5 class="mb-0">Centre de Notifications</h5>
+        </div>
+        <div class="card-body p-0 overflow-auto" style="max-height: 500px;">
+          @if (chargementNotifs) { <div class="p-3">Chargement des notifications...</div> }
+
+          @if (!chargementNotifs && notifications.length === 0) {
+            <div class="p-3 text-muted">Aucune notification disponible.</div>
+          }
+
+          <ul class="list-group list-group-flush">
+            @for (n of notifications; track n.id) {
+              <li class="list-group-item d-flex justify-content-between align-items-start" [ngClass]="{'bg-light': !n.lue}">
+                <div>
+                  <div class="fw-bold">{{ n.titre }}</div>
+                  <small class="text-secondary">{{ n.message }}</small><br>
+                  <small class="text-muted" style="font-size: 0.75rem;">{{ n.dateCreation | date:'dd/MM/yyyy HH:mm' }}</small>
+                </div>
+                @if (!n.lue) {
+                  <button (click)="marquerCommeLue(n.id)" class="btn btn-sm btn-outline-success">Marquer lue</button>
+                } @else {
+                  <span class="badge bg-secondary">Lue</span>
+                }
+              </li>
+            }
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

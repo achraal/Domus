@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
-import { AuthRequestDTO, AuthResponseDTO } from '../models/auth.model';
+import { AuthRequestDTO, AuthResponseDTO, UtilisateurResponseDTO } from '../models/auth.model'; // Import de UtilisateurResponseDTO ajouté
 import { Observable, tap } from 'rxjs';
 
 @Injectable({
@@ -19,6 +19,10 @@ export class AuthService {
         localStorage.setItem('utilisateur', JSON.stringify(response.utilisateur));
       })
     );
+  } // <-- La méthode login se ferme ici
+
+  inscription(utilisateur: any): Observable<UtilisateurResponseDTO> {
+    return this.http.post<UtilisateurResponseDTO>(`${this.apiUrl}/inscription`, utilisateur);
   }
 
   logout() {
@@ -28,5 +32,21 @@ export class AuthService {
 
   estConnecte(): boolean {
     return !!localStorage.getItem('token');
+  }
+  getUtilisateurConnecte(): any {
+    const userStr = localStorage.getItem('utilisateur');
+    return userStr ? JSON.parse(userStr) : null;
+  }
+
+  aLeRole(roleAttendu: string): boolean {
+    const user = this.getUtilisateurConnecte();
+    if (!user) return false;
+
+    // Adaptez selon la structure de votre UtilisateurDTO backend (ex: user.role ou user.roles)
+    if (Array.isArray(user.roles)) {
+      return user.roles.includes(roleAttendu) || user.roles.includes(`ROLE_${roleAttendu}`);
+    }
+
+    return user.role === roleAttendu || user.role === `ROLE_${roleAttendu}`;
   }
 }

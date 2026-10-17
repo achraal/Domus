@@ -1,0 +1,155 @@
+<div class="container my-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Tarification Dynamique (Annonce #{{ idAnnonce }})</h2>
+    <a routerLink="/annonces" class="btn btn-outline-secondary">← Retour aux annonces</a>
+  </div>
+
+  <!-- Section Simulateur de Prix -->
+  <div class="card shadow-sm mb-4 border-info">
+    <div class="card-header bg-info text-white">
+      <h5 class="mb-0">Simulateur & Calculeur de Prix en Temps Réel</h5>
+    </div>
+    <div class="card-body">
+      <form [formGroup]="calculForm" (ngSubmit)="simulerPrix()" class="row g-3 align-items-center">
+        <div class="col-auto">
+          <label class="col-form-label fw-bold">Sélectionner une date :</label>
+        </div>
+        <div class="col-auto">
+          <input type="date" class="form-control" formControlName="dateTest" />
+        </div>
+        <div class="col-auto">
+          <button type="submit" class="btn btn-info text-white" [disabled]="calculForm.invalid || calculEnCours">
+            {{ calculEnCours ? 'Calcul...' : 'Calculer le Prix' }}
+          </button>
+        </div>
+        @if (prixCalcule !== null) {
+          <div class="col-auto ms-auto">
+            <span class="fs-5 fw-bold text-success">Prix pour la date : {{ prixCalcule }} DH</span>
+          </div>
+        }
+      </form>
+    </div>
+  </div>
+
+  <div class="row">
+    <!-- Formulaire d'ajout de règle (Propriétaire / Admin) -->
+    @if (authService.aLeRole('PROPRIETAIRE') || authService.aLeRole('ADMINISTRATEUR')) {
+      <div class="col-md-5 mb-4">
+        <div class="card shadow-sm">
+          <div class="card-header bg-dark text-white">
+            <h5 class="mb-0">Ajouter une Règle Tarifaire</h5>
+          </div>
+          <div class="card-body">
+            @if (succes) { <div class="alert alert-success">{{ succes }}</div> }
+            @if (erreur) { <div class="alert alert-danger">{{ erreur }}</div> }
+
+            <form [formGroup]="tarificationForm" (ngSubmit)="ajouterTarification()">
+              <div class="mb-3">
+                <label class="form-label">Nom de la règle</label>
+                <input type="text" class="form-control" formControlName="nom" placeholder="Ex: Saison Haute Été, Promo WE..." />
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label">Type de Tarification</label>
+                <select class="form-select" formControlName="typeTarification">
+                  @for (t of typesTarification; track t) {
+                    <option [value]="t">{{ t }}</option>
+                  }
+                </select>
+              </div>
+
+              <div class="row mb-3">
+                <div class="col">
+                  <label class="form-label">Date Début</label>
+                  <input type="date" class="form-control" formControlName="dateDebut" />
+                </div>
+                <div class="col">
+                  <label class="form-label">Date Fin</label>
+                  <input type="date" class="form-control" formControlName="dateFin" />
+                </div>
+              </div>
+
+              <div class="row mb-3">
+                <div class="col">
+                  <label class="form-label">Pourcentage (%)</label>
+                  <input type="number" class="form-control" formControlName="pourcentage" placeholder="Ex: +20 ou -15" />
+                </div>
+                <div class="col">
+                  <label class="form-label">Prix Fixe (DH)</label>
+                  <input type="number" class="form-control" formControlName="prixFixe" placeholder="Ex: 500" />
+                </div>
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label">Description (optionnel)</label>
+                <textarea class="form-control" rows="2" formControlName="description"></textarea>
+              </div>
+
+              <button type="submit" class="btn btn-primary w-100" [disabled]="tarificationForm.invalid || soumissionEnCours">
+                {{ soumissionEnCours ? 'Enregistrement...' : 'Créer la règle' }}
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- Liste des règles actives -->
+    <div [ngClass]="(authService.aLeRole('PROPRIETAIRE') || authService.aLeRole('ADMINISTRATEUR')) ? 'col-md-7' : 'col-12'">
+      <div class="card shadow-sm">
+        <div class="card-header bg-secondary text-white">
+          <h5 class="mb-0">Règles & Promos Configurées</h5>
+        </div>
+        <div class="card-body p-0">
+          @if (chargement) { <div class="p-3">Chargement des règles...</div> }
+
+          @if (!chargement && tarifications.length === 0) {
+            <div class="p-3 text-muted">Aucune règle de tarification configurée pour cette annonce.</div>
+          }
+
+          @if (!chargement && tarifications.length > 0) {
+            <div class="table-responsive">
+              <table class="table table-hover mb-0 align-middle">
+                <thead class="table-light">
+                <tr>
+                  <th>Nom & Type</th>
+                  <th>Période</th>
+                  <th>Ajustement</th>
+                  <th>Action</th>
+                </tr>
+                </thead>
+                <tbody>
+                  @for (item of tarifications; track item.id) {
+                    <tr>
+                      <td>
+                        <strong>{{ item.nom }}</strong><br>
+                        <span class="badge" [ngClass]="getBadgeClass(item.typeTarification)">{{ item.typeTarification }}</span>
+                      </td>
+                      <td>Du {{ item.dateDebut | date:'dd/MM/yy' }}<br>au {{ item.dateFin | date:'dd/MM/yy' }}</td>
+                      <td>
+                        @if (item.prixFixe) {
+                          <span class="fw-bold">{{ item.prixFixe }} DH (Fixe)</span>
+                        } @else if (item.pourcentage) {
+                          <span class="fw-bold" [ngClass]="item.pourcentage > 0 ? 'text-danger' : 'text-success'">
+                            {{ item.pourcentage > 0 ? '+' : '' }}{{ item.pourcentage }}%
+                          </span>
+                        } @else {
+                          <span class="text-muted">Standard</span>
+                        }
+                      </td>
+                      <td>
+                        @if (item.id && (authService.aLeRole('PROPRIETAIRE') || authService.aLeRole('ADMINISTRATEUR'))) {
+                          <button (click)="supprimer(item.id)" class="btn btn-sm btn-outline-danger">Supprimer</button>
+                        }
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

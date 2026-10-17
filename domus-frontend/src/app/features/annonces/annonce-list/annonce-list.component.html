@@ -1,0 +1,35 @@
+<div class="container my-4">
+  <h2>Gestion des Annonces</h2>
+
+  <div class="mb-3 btn-group">
+    <button class="btn btn-outline-primary" (click)="chargerToutesLesAnnonces()">Toutes les annonces</button>
+    <button class="btn btn-outline-secondary" (click)="chargerMesAnnonces()">Mes annonces (Propriétaire)</button>
+    <a routerLink="/annonces/nouvelle" class="btn btn-success">+ Créer une annonce</a>
+  </div>
+
+  <div *ngIf="chargement" class="alert alert-info">Chargement en cours...</div>
+  <div *ngIf="erreur" class="alert alert-danger">{{ erreur }}</div>
+
+  <div class="row" *ngIf="!chargement">
+    <div class="col-md-4 mb-3" *ngFor="let item of (affichageMesAnnonces ? mesAnnonces : annonces)">
+      <div class="card h-100">
+        <div class="card-body">
+          <h5 class="card-title">{{ item.titre }}</h5>
+          <p class="card-text">{{ item.description }}</p>
+          <p class="fw-bold text-primary">{{ item.prix }} DH</p>
+        </div>
+        <div class="card-footer d-flex justify-content-between">
+          <a [routerLink]="['/annonces', item.id]" class="btn btn-sm btn-info text-white">Voir</a>
+          <a [routerLink]="['/annonces', item.id, 'etats']" class="btn btn-sm btn-outline-dark">
+            Suivi État
+          </a>
+          <a [routerLink]="['/annonces', item.id, 'tarifications']" class="btn btn-sm btn-outline-success">
+            Tarification
+          </a>
+          <a [routerLink]="['/annonces/editer', item.id]" class="btn btn-sm btn-warning">Éditer</a>
+          <button (click)="supprimer(item.id)" class="btn btn-sm btn-danger">Supprimer</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

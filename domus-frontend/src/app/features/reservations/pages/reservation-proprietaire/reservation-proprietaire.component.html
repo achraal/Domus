@@ -1,0 +1,50 @@
+<div class="container my-4">
+  <h3>Demandes de Réservation pour l'annonce #{{ idAnnonce }}</h3>
+
+  @if (chargement) {
+    <div class="alert alert-info">Chargement...</div>
+  }
+
+  @if (!chargement && reservations.length === 0) {
+    <p class="text-muted">Aucune demande reçue pour cette annonce.</p>
+  }
+
+  @if (!chargement && reservations.length > 0) {
+    <table class="table table-bordered align-middle">
+      <thead class="table-dark">
+      <tr>
+        <th>Locataire</th>
+        <th>Période</th>
+        <th>Statut Actuel</th>
+        <th>Actions</th>
+      </tr>
+      </thead>
+      <tbody>
+        @for (item of reservations; track item.id) {
+          <tr>
+            <td>{{ item.locataireNom || 'Locataire #' + item.id }}</td>
+            <td>Du {{ item.dateDebut | date:'dd/MM/yyyy' }} au {{ item.dateFin | date:'dd/MM/yyyy' }}</td>
+            <td>
+              <span class="badge bg-info">{{ item.statut }}</span>
+            </td>
+            <td>
+              <div class="btn-group">
+                <!-- Bouton Suivi Paiements -->
+                <a [routerLink]="['/reservations', item.id, 'paiements']" class="btn btn-sm btn-outline-info">
+                  Suivi Paiements
+                </a>
+
+                @if (item.statut === statuts.EN_ATTENTE) {
+                  <button (click)="changerStatut(item.id, statuts.CONFIRMEE)" class="btn btn-sm btn-success">Accepter</button>
+                  <button (click)="changerStatut(item.id, statuts.REFUSEE)" class="btn btn-sm btn-danger">Refuser</button>
+                } @else {
+                <span class="text-muted">Traité</span>
+              }
+              </div>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  }
+</div>

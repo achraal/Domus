@@ -1,0 +1,152 @@
+<!-- src/app/features/paiements/pages/gestion-paiement/gestion-paiement.component.html -->
+<div class="container my-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Paiements & Facturation (Réservation #{{ idReservation }})</h2>
+    <div>
+      @if (authService.aLeRole('PROPRIETAIRE') || authService.aLeRole('ADMINISTRATEUR')) {
+        <button (click)="rembourserDepot()" class="btn btn-outline-warning me-2" [disabled]="remboursementEnCours">
+          {{ remboursementEnCours ? 'Remboursement...' : 'Rembourser Dépôt' }}
+        </button>
+      }
+      <a routerLink="/reservations/mes-reservations" class="btn btn-outline-secondary">← Retour</a>
+    </div>
+  </div>
+
+  <div class="row">
+    <!-- Formulaire d'exécution de paiement (Locataire / Admin) -->
+    @if (authService.aLeRole('LOCATAIRE') || authService.aLeRole('ADMINISTRATEUR')) {
+      <div class="col-md-5 mb-4">
+        <div class="card shadow-sm">
+          <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">Effectuer un paiement en ligne</h5>
+          </div>
+          <div class="card-body">
+            @if (succes) { <div class="alert alert-success">{{ succes }}</div> }
+            @if (erreur) { <div class="alert alert-danger">{{ erreur }}</div> }
+
+            <form [formGroup]="paiementForm" (ngSubmit)="effectuerPaiement()">
+              <div class="mb-3">
+                <label class="form-label">Montant (DH)</label>
+                <input type="number" class="form-control" formControlName="montant" placeholder="Ex: 2500" />
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label">Type de Paiement</label>
+                <select class="form-select" formControlName="typePaiement">
+                  @for (t of typesPaiement; track t) {
+                    <option [value]="t">{{ t }}</option>
+                  }
+                </select>
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label">Mode de Réglement</label>
+                <select class="form-select" formControlName="modePaiement">
+                  @for (m of modesPaiement; track m) {
+                    <option [value]="m">{{ m }}</option>
+                  }
+                </select>
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label">Remarques / Référence</label>
+                <input type="text" class="form-control" formControlName="remarques" placeholder="Ex: Acompte loyer mois X..." />
+              </div>
+
+              <button type="submit" class="btn btn-success w-100" [disabled]="paiementForm.invalid || soumissionEnCours">
+                {{ soumissionEnCours ? 'Traitement du paiement...' : 'Payer maintenant' }}
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- Liste et historique des transactions -->
+    <div [ngClass]="(authService.aLeRole('LOCATAIRE') || authService.aLeRole('ADMINISTRATEUR')) ? 'col-md-7' : 'col-12'">
+      <div class="card shadow-sm">
+        <div class="card-header bg-dark text-white">
+          <h5 class="mb-0">Historique des Transactions</h5>
+        </div>
+        <div class="card-body p-0">
+          @if (chargement) { <div class="p-3 text-muted">Chargement de l'historique...</div> }
+
+          @if (!chargement && paiements.length === 0) {
+            <div class="p-3 text-muted">Aucun paiement enregistré pour cette réservation.</div>
+          }
+
+          @if (!chargement && paiements.length > 0) {
+            <div class="table-responsive">
+              <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                <tr>
+                  <th>Type & Date</th>
+                  <th>Montant</th>
+                  <th>Mode</th>
+                  <th>Statut</th>
+                  <th>Quittance</th>
+                </tr>
+                </thead>
+                <tbody>
+                  @for (p of paiements; track p.id) {
+                    <tr>
+                      <td>
+                        <strong>{{ p.typePaiement }}</strong><br>
+                        <small class="text-muted">{{ p.datePaiement | date:'dd/MM/yyyy HH:mm' }}</small>
+                      </td>
+                      <td class="fw-bold">{{ p.montant }} DH</td>
+                      <td>{{ p.modePaiement }}</td>
+                      <td>
+                        <span class="badge" [ngClass]="getStatutBadgeClass(p.statut)">
+                          {{ p.statut }}
+                        </span>
+                      </td>
+                      <td>
+                        @if (p.id && p.statut === 'REUSSI') {
+                          <button (click)="telechargerQuittance(p.id)" class="btn btn-sm btn-outline-primary">
+                            Quittance
+                          </button>
+                        } @else {
+                          <span class="text-muted small">N/A</span>
+                        }
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Aperçu / Modal de Quittance -->
+  @if (quittanceSelectionnee) {
+    <div class="modal d-block tab-index='-1'" style="background: rgba(0,0,0,0.5);">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header bg-success text-white">
+            <h5 class="modal-title">Quittance N° {{ quittanceSelectionnee.numeroQuittance }}</h5>
+            <button type="button" class="btn-close btn-close-white" (click)="quittanceSelectionnee = null"></button>
+          </div>
+          <div class="modal-body">
+            <p><strong>Payeur :</strong> {{ quittanceSelectionnee.nomPayeur }}</p>
+            <p><strong>Bénéficiaire :</strong> {{ quittanceSelectionnee.nomBeneficiaire }}</p>
+            <p><strong>Montant Régler :</strong> {{ quittanceSelectionnee.montant }} DH</p>
+            <p><strong>Période :</strong> {{ quittanceSelectionnee.periode }}</p>
+            <p><strong>Date d'Émission :</strong> {{ quittanceSelectionnee.dateEmission | date:'dd/MM/yyyy' }}</p>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" (click)="quittanceSelectionnee = null">Fermer</button>
+            @if (quittanceSelectionnee.lienTelechargementPdf) {
+              <a [href]="quittanceSelectionnee.lienTelechargementPdf" target="_blank" class="btn btn-primary">
+                Télécharger PDF
+              </a>
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+</div>

@@ -1,0 +1,47 @@
+<div class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+  <div class="px-4 py-6 sm:px-0">
+    <div class="flex justify-between items-center mb-6">
+      <h1 class="text-2xl font-semibold text-gray-900">Gestion des utilisateurs</h1>
+    </div>
+
+    <div *ngIf="isLoading" class="text-center py-4 text-gray-500">
+      Chargement des utilisateurs...
+    </div>
+
+    <div *ngIf="!isLoading" class="bg-white shadow overflow-hidden sm:rounded-md">
+      <ul class="divide-y divide-gray-200">
+        <li *ngFor="let user of utilisateurs">
+          <div class="px-4 py-4 flex items-center sm:px-6 justify-between">
+            <div class="flex items-center">
+              <div class="ml-4">
+                <p class="text-sm font-medium text-blue-600 truncate">
+                  {{ user.prenom }} {{ user.nom }}
+                </p>
+                <p class="text-sm text-gray-500">
+                  {{ user.email }} • {{ user.telephone }}
+                </p>
+              </div>
+            </div>
+
+            <div class="flex items-center space-x-4">
+              <!-- Badge Rôle -->
+              <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                {{ user.typeUtilisateur }}
+              </span>
+
+              <!-- Bouton de suppression -->
+              <button (click)="supprimerUtilisateur(user.idUtilisateur, user.nom)"
+                      class="text-red-600 hover:text-red-900 bg-red-50 hover:bg-red-100 px-3 py-1 rounded transition-colors">
+                Supprimer
+              </button>
+            </div>
+          </div>
+        </li>
+      </ul>
+
+      <div *ngIf="utilisateurs.length === 0" class="p-4 text-center text-gray-500">
+        Aucun utilisateur trouvé.
+      </div>
+    </div>
+  </div>
+</div>
